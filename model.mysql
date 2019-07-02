@@ -1,0 +1,267 @@
+# Create schemas
+
+# Create tables
+CREATE TABLE IF NOT EXISTS Device
+(
+    id_device BIGINT NOT NULL,
+    nam_device_model VARCHAR(50) NOT NULL,
+    num_equity_asset VARCHAR(30) UNIQUE,
+    dt_activation DATE NOT NULL,
+    id_status SMALLINT NOT NULL,
+    num_invoice BIGINT NOT NULL,
+    id_vendor SMALLINT NOT NULL,
+    id_device_type SMALLINT NOT NULL,
+    id_status SMALLINT NOT NULL,
+    PRIMARY KEY(id_device)
+);
+
+CREATE TABLE IF NOT EXISTS Device_Type
+(
+    id_device_type SMALLINT NOT NULL,
+    desc_device_type VARCHAR(30) NOT NULL UNIQUE,
+    PRIMARY KEY(id_device_type)
+);
+
+CREATE TABLE IF NOT EXISTS Vendor
+(
+    id_vendor SMALLINT NOT NULL,
+    nam_vendor VARCHAR(30) NOT NULL,
+    ind_type CHARACTER(1) NOT NULL
+        CHECK ('D', 'F'),
+    PRIMARY KEY(id_vendor)
+);
+
+CREATE TABLE IF NOT EXISTS Purchase
+(
+    num_invoice BIGINT NOT NULL,
+    dt_emission INT,
+    id_vendor SMALLINT NOT NULL,
+    PRIMARY KEY(num_invoice)
+);
+
+CREATE TABLE IF NOT EXISTS Status_Type
+(
+    id_status SMALLINT NOT NULL,
+    desc_status VARCHAR(30),
+    PRIMARY KEY(id_status)
+);
+
+CREATE TABLE IF NOT EXISTS PC
+(
+    id_device BIGINT NOT NULL UNIQUE,
+    nam_hostname VARCHAR(30) NOT NULL UNIQUE,
+    num_memory SMALLINT,
+    id_operation_system SMALLINT NOT NULL,
+    PRIMARY KEY(id_device)
+);
+
+CREATE TABLE IF NOT EXISTS Operation_System
+(
+    id_operation_system SMALLINT NOT NULL,
+    nam_operation_system VARCHAR(30) NOT NULL,
+    des_version VARCHAR(30) NOT NULL,
+    PRIMARY KEY(id_operation_system)
+);
+
+CREATE TABLE IF NOT EXISTS Mobile_Phone
+(
+    Device_id_device BIGINT NOT NULL UNIQUE,
+    num_phone SMALLINT NOT NULL UNIQUE,
+    id_operation_system SMALLINT,
+    PRIMARY KEY(Device_id_device)
+);
+
+CREATE TABLE IF NOT EXISTS Monitor
+(
+    Device_id_device BIGINT NOT NULL,
+    desc_resolution VARCHAR(30),
+    PRIMARY KEY(Device_id_device)
+);
+
+CREATE TABLE IF NOT EXISTS Periferical
+(
+    Device_id_device BIGINT NOT NULL,
+    desc_periferical VARCHAR(30) NOT NULL,
+    type_periferical CHARACTER(1) NOT NULL
+        CHECK ('M', 'C', 'A'),
+    PRIMARY KEY(Device_id_device)
+);
+
+CREATE TABLE IF NOT EXISTS Locality
+(
+    id_locality SMALLINT NOT NULL,
+    nam_locality VARCHAR(30) NOT NULL,
+    code_locality VARCHAR(10) NOT NULL UNIQUE,
+    PRIMARY KEY(id_locality)
+);
+
+CREATE TABLE IF NOT EXISTS Departament
+(
+    id_departament SMALLINT NOT NULL,
+    desc_departament VARCHAR(50) NOT NULL,
+    code_cost_center VARCHAR(40) NOT NULL,
+    PRIMARY KEY(id_departament)
+);
+
+CREATE TABLE IF NOT EXISTS Position
+(
+    id_position SMALLINT NOT NULL,
+    desc_position VARCHAR(40) NOT NULL UNIQUE,
+    PRIMARY KEY(id_position)
+);
+
+CREATE TABLE IF NOT EXISTS User
+(
+    id_user INT NOT NULL,
+    nam_user VARCHAR(40) NOT NULL,
+    nam_login VARCHAR(40) NOT NULL UNIQUE,
+    type_user CHARACTER(1) NOT NULL
+        CHECK ('A', 'T'),
+    id_coordinator SMALLINT,
+    id_departament SMALLINT NOT NULL,
+    id_position SMALLINT NOT NULL,
+    id_locality SMALLINT NOT NULL,
+    PRIMARY KEY(id_user)
+);
+
+CREATE TABLE IF NOT EXISTS Loan_Type
+(
+    id_loan_type SMALLINT NOT NULL,
+    desc_loan_type VARCHAR(50) NOT NULL UNIQUE,
+    PRIMARY KEY(id_loan_type)
+);
+
+CREATE TABLE IF NOT EXISTS Loan
+(
+    id_device BIGINT NOT NULL,
+    id_user INT NOT NULL,
+    id_loan_type SMALLINT NOT NULL,
+    dt_start_loan DATE NOT NULL,
+    dt_devolution DATE,
+    id_analyst INT NOT NULL,
+    desc_device_status VARCHAR(60),
+    id_start_contract BIGINT NOT NULL,
+    id_devolution_contract BIGINT,
+    PRIMARY KEY(id_device, id_user, id_loan_type)
+);
+
+CREATE TABLE IF NOT EXISTS Contract
+(
+    id_contract BIGINT NOT NULL,
+    img_contract BINARY(0) NOT NULL,
+    PRIMARY KEY(id_contract)
+);
+
+
+# Create FKs
+ALTER TABLE Purchase
+    ADD    FOREIGN KEY (id_vendor)
+    REFERENCES Vendor(id_vendor)
+;
+    
+ALTER TABLE Device
+    ADD CONSTRAINT FK_fk_purchase_device
+    FOREIGN KEY (num_invoice)
+    REFERENCES Purchase(num_invoice)
+;
+    
+ALTER TABLE Device
+    ADD    FOREIGN KEY (id_vendor)
+    REFERENCES Vendor(id_vendor)
+;
+    
+ALTER TABLE Device
+    ADD    FOREIGN KEY (id_device_type)
+    REFERENCES Device_Type(id_device_type)
+;
+    
+ALTER TABLE Device
+    ADD    FOREIGN KEY (id_status)
+    REFERENCES Status_Type(id_status)
+;
+    
+ALTER TABLE PC
+    ADD    FOREIGN KEY (id_device)
+    REFERENCES Device(id_device)
+;
+    
+ALTER TABLE PC
+    ADD CONSTRAINT FK_fk_opersyst_pc
+    FOREIGN KEY (id_operation_system)
+    REFERENCES Operation_System(id_operation_system)
+;
+    
+ALTER TABLE Mobile_Phone
+    ADD    FOREIGN KEY (Device_id_device)
+    REFERENCES Device(id_device)
+;
+    
+ALTER TABLE Mobile_Phone
+    ADD    FOREIGN KEY (id_operation_system)
+    REFERENCES Operation_System(id_operation_system)
+;
+    
+ALTER TABLE Monitor
+    ADD    FOREIGN KEY (Device_id_device)
+    REFERENCES Device(id_device)
+;
+    
+ALTER TABLE Periferical
+    ADD    FOREIGN KEY (Device_id_device)
+    REFERENCES Device(id_device)
+;
+    
+ALTER TABLE User
+    ADD    FOREIGN KEY (id_user)
+    REFERENCES User(id_coordinator)
+;
+    
+ALTER TABLE User
+    ADD    FOREIGN KEY (id_position)
+    REFERENCES Position(id_position)
+;
+    
+ALTER TABLE User
+    ADD    FOREIGN KEY (id_departament)
+    REFERENCES Departament(id_departament)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_device)
+    REFERENCES Device(id_device)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_user)
+    REFERENCES User(id_user)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_loan_type)
+    REFERENCES Loan_Type(id_loan_type)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_analyst)
+    REFERENCES User(id_user)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_start_contract)
+    REFERENCES Contract(id_contract)
+;
+    
+ALTER TABLE Loan
+    ADD    FOREIGN KEY (id_devolution_contract)
+    REFERENCES Contract(id_contract)
+;
+    
+ALTER TABLE Locality
+    ADD CONSTRAINT FK_fk_locality_user
+    FOREIGN KEY (id_locality)
+    REFERENCES User(id_locality)
+;
+    
+
+# Create Indexes
+
